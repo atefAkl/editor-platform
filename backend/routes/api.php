@@ -5,6 +5,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\AuthorController;
 use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\BookWorkflowController;
+use App\Http\Controllers\Api\PublicCatalogController;
+
+// Public Front-End Catalog Routes (Publicly Visible Books only)
+Route::get('/catalog', [PublicCatalogController::class, 'home']);
+Route::get('/catalog/books/{slug}', [PublicCatalogController::class, 'bookDetails']);
 
 // Public Auth routes
 Route::post('/login', [AuthController::class, 'login']);

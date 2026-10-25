@@ -1,11 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import AdminLayout from './templates/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import { BooksListPage } from './pages/BooksListPage';
 import { BookCreatePage } from './pages/BookCreatePage';
 import { BookDetailPage } from './pages/BookDetailPage';
 import { BookEditPage } from './pages/BookEditPage';
+import { PublicHomePage } from './pages/PublicHomePage';
+import { PublicBookDetailsPage } from './pages/PublicBookDetailsPage';
 import NewsPlaceholder from './pages/NewsPlaceholder';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './hooks/useAuth';
@@ -14,9 +16,14 @@ const AuthGuard = () => {
   const { user, loading } = useAuth();
   
   if (loading) return <div className="flex items-center justify-center h-screen bg-gray-50 text-gray-500">جاري التحميل...</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <NavigateToLogin />;
   
   return <Outlet />;
+};
+
+const NavigateToLogin = () => {
+  window.location.href = '/login';
+  return null;
 };
 
 function App() {
@@ -24,6 +31,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public Visitor Facing Pages */}
+          <Route path="/" element={<PublicHomePage />} />
+          <Route path="/books/:slug" element={<PublicBookDetailsPage />} />
+
+          {/* Admin Auth & Shell */}
           <Route path="/login" element={<Login />} />
           
           <Route path="/admin" element={<AuthGuard />}>
@@ -36,8 +48,6 @@ function App() {
               <Route path="news" element={<NewsPlaceholder />} />
             </Route>
           </Route>
-          
-          <Route path="/" element={<Navigate to="/admin" />} />
         </Routes>
       </Router>
     </AuthProvider>
