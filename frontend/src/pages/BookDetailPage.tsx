@@ -94,6 +94,13 @@ export const BookDetailPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">{book.title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {allowed_actions.can_update && (
+            <Link to={`/admin/books/${book.id}/edit`}>
+              <Button variant="primary" size="sm">
+                ✏️ تعديل الكتاب
+              </Button>
+            </Link>
+          )}
           <Link to="/admin/books">
             <Button variant="secondary" size="sm">
               رجوع للقائمة

@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import { BooksListPage } from './pages/BooksListPage';
 import { BookCreatePage } from './pages/BookCreatePage';
 import { BookDetailPage } from './pages/BookDetailPage';
+import { BookEditPage } from './pages/BookEditPage';
 import NewsPlaceholder from './pages/NewsPlaceholder';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './hooks/useAuth';
@@ -31,6 +32,7 @@ function App() {
               <Route path="books" element={<BooksListPage />} />
               <Route path="books/create" element={<BookCreatePage />} />
               <Route path="books/:id" element={<BookDetailPage />} />
+              <Route path="books/:id/edit" element={<BookEditPage />} />
               <Route path="news" element={<NewsPlaceholder />} />
             </Route>
           </Route>

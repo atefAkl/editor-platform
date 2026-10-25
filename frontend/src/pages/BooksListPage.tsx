@@ -179,6 +179,13 @@ export const BooksListPage: React.FC = () => {
                             إدارة وعرض
                           </Button>
                         </Link>
+                        {book.publication_status !== 'publication_cancelled' && (
+                          <Link to={`/admin/books/${book.id}/edit`}>
+                            <Button variant="outline" size="sm">
+                              تعديل
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </td>
                   </tr>
