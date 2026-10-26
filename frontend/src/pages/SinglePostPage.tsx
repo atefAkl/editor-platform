@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
 import { PublicNavbar } from '../components/organisms/PublicNavbar';
 import { Button } from '../components/atoms/Button';
 
@@ -15,8 +16,13 @@ interface Comment {
 interface FullPost {
   id: number;
   author_id: number;
+  type?: string;
+  title?: string;
   content: string;
   image_path?: string | null;
+  file_path?: string | null;
+  file_name?: string | null;
+  file_size?: number | null;
   book_id?: number | null;
   likes_count: number;
   comments_count: number;
@@ -27,6 +33,7 @@ interface FullPost {
     id: number;
     name: string;
     bio?: string;
+    avatar?: string;
   };
   book?: {
     id: number;
@@ -40,13 +47,12 @@ interface FullPost {
 
 export const SinglePostPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const { user, loginWithGoogle } = useAuth();
 
   const [post, setPost] = useState<FullPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [commentName, setCommentName] = useState('');
   const [commentContent, setCommentContent] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
@@ -83,16 +89,17 @@ export const SinglePostPage: React.FC = () => {
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      alert('التعليق متاح فقط للأعضاء المسجلين دخول.');
+      return;
+    }
     if (!post || !commentContent.trim()) return;
 
     setSubmittingComment(true);
     try {
       const res = await apiClient.post<{ comment: Comment; comments_count: number }>(
         `/api/feed/${post.id}/comments`,
-        {
-          author_name: commentName.trim() || 'قارئ متفاعل',
-          content: commentContent.trim(),
-        }
+        { content: commentContent.trim() }
       );
 
       if (res.success && res.data) {
@@ -127,6 +134,13 @@ export const SinglePostPage: React.FC = () => {
     }
   };
 
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes) return '';
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1) return `${mb.toFixed(1)} ميجابايت`;
+    return `${(bytes / 1024).toFixed(0)} كيلوبايت`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-100/70 flex flex-col font-sans" dir="rtl">
       <PublicNavbar authorName={post?.author?.name} />
@@ -146,7 +160,7 @@ export const SinglePostPage: React.FC = () => {
             className="text-sm font-semibold text-gray-600 hover:text-primary-700 flex items-center gap-2"
           >
             <span>←</span>
-            <span>العودة إلى خلاصة الأخبار</span>
+            <span>العودة إلى خلاصة الأخبار والمستجدات</span>
           </Link>
           <Link to="/publications">
             <Button variant="outline" size="sm">
@@ -158,7 +172,7 @@ export const SinglePostPage: React.FC = () => {
         {loading && (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-600 border-t-transparent"></div>
-            <p className="text-sm text-gray-500 mt-2">جاري تحميل المنشور...</p>
+            <p className="text-sm text-gray-500 mt-2">جاري تحميل تفاصيل العمل والمنشور...</p>
           </div>
         )}
 
@@ -173,11 +187,15 @@ export const SinglePostPage: React.FC = () => {
             {/* Main Post Card */}
             <article className="bg-white rounded-2xl shadow-xs border border-gray-200 overflow-hidden">
               <div className="p-6 sm:p-8 space-y-6">
-                {/* Author Info */}
+                {/* Author Info Header */}
                 <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 to-indigo-600 text-white font-extrabold flex items-center justify-center text-2xl shadow-xs">
-                      {post.author?.name ? post.author.name.charAt(0) : 'م'}
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 to-indigo-600 text-white font-extrabold flex items-center justify-center text-2xl shadow-xs overflow-hidden">
+                      {post.author?.avatar ? (
+                        <img src={`/storage/${post.author.avatar}`} alt={post.author.name} className="w-full h-full object-cover" />
+                      ) : (
+                        post.author?.name ? post.author.name.charAt(0) : 'م'
+                      )}
                     </div>
                     <div>
                       <h2 className="font-extrabold text-xl text-gray-950">
@@ -191,15 +209,23 @@ export const SinglePostPage: React.FC = () => {
 
                   {post.is_pinned && (
                     <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full font-bold">
-                      📌 مثبت في الصفحة
+                      📌 مثبت
                     </span>
                   )}
                 </div>
 
-                {/* Content */}
-                <div className="text-gray-900 text-base sm:text-lg leading-relaxed whitespace-pre-line font-normal">
-                  {post.content}
-                </div>
+                {/* Post Title */}
+                {post.title && (
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-950 leading-tight">
+                    {post.title}
+                  </h1>
+                )}
+
+                {/* Content Rich Text */}
+                <div
+                  className="text-gray-900 text-base sm:text-lg leading-relaxed prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
 
                 {/* Attached Image */}
                 {post.image_path && (
@@ -209,6 +235,39 @@ export const SinglePostPage: React.FC = () => {
                       alt="صورة المنشور"
                       className="w-full h-auto max-h-[550px] object-contain"
                     />
+                  </div>
+                )}
+
+                {/* Dedicated File Download Section (POLICY: Displayed only on Single Post Page) */}
+                {post.file_path && (
+                  <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/50 border border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 text-center sm:text-right">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-3xl shadow-sm shrink-0">
+                        📄
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-md">
+                          ملف رقمي معتمد للتحميل
+                        </span>
+                        <h4 className="font-extrabold text-gray-900 text-base mt-1">
+                          {post.file_name || 'ملف المحتوى الكامل'}
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          الحجم: {formatFileSize(post.file_size)} • صيغة رقمية قابلة للقراءة
+                        </p>
+                      </div>
+                    </div>
+
+                    <a
+                      href={`/storage/${post.file_path}`}
+                      download={post.file_name || 'file'}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Button variant="primary" size="md" className="font-bold shadow-sm whitespace-nowrap">
+                        ⬇️ تحميل الملف الآن
+                      </Button>
+                    </a>
                   </div>
                 )}
 
@@ -263,14 +322,14 @@ export const SinglePostPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button
                     onClick={handleLike}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-red-600 transition-colors"
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-red-600 transition-colors cursor-pointer"
                   >
                     <span>👍</span>
                     <span>أعجبني</span>
                   </button>
                   <button
                     onClick={handleShare}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-blue-600 transition-colors"
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     <span>↗️</span>
                     <span>مشاركة الرابط</span>
@@ -314,30 +373,49 @@ export const SinglePostPage: React.FC = () => {
                 </p>
               )}
 
-              {/* Add Comment Form */}
-              <form onSubmit={handleCommentSubmit} className="pt-6 border-t border-gray-100 space-y-4">
-                <h4 className="text-sm font-bold text-gray-800">أضف تعليقك</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="اسمك الكريم (اختياري)..."
-                    value={commentName}
-                    onChange={(e) => setCommentName(e.target.value)}
-                    className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white focus:outline-hidden"
+              {/* Add Comment Form for Authenticated Readers OR Google Sign-in Prompt */}
+              {user ? (
+                <form onSubmit={handleCommentSubmit} className="pt-6 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-gray-800">
+                      إضافة تعليق بصفتك: <span className="text-primary-700">{user.name}</span>
+                    </h4>
+                  </div>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="اكتب تعليقك وانطباعك حول المنشور..."
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                    className="w-full p-4 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white focus:outline-hidden resize-none"
                   />
+                  <Button type="submit" variant="primary" disabled={submittingComment}>
+                    {submittingComment ? 'جاري الإرسال...' : 'نشر التعليق'}
+                  </Button>
+                </form>
+              ) : (
+                <div className="pt-6 border-t border-gray-100 bg-blue-50/70 p-6 rounded-2xl text-center space-y-3">
+                  <h4 className="text-base font-bold text-blue-950">
+                    هل ترغب في التعليق والمشاركة في النقاش؟
+                  </h4>
+                  <p className="text-xs text-blue-800 max-w-md mx-auto">
+                    التعليق متاح للأعضاء والجمهور المسجل. يمكنك تسجيل الدخول بنقرة واحدة باستخدام حساب جوجل أو بياناتك.
+                  </p>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => loginWithGoogle()}
+                      className="inline-flex items-center gap-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-900 text-sm font-bold px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+                    >
+                      <span>دخول سريع بحساب جوجل</span>
+                    </button>
+                    <Link to="/login">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        تسجيل الدخول
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <textarea
-                  required
-                  rows={3}
-                  placeholder="اكتب تعليقك هنا بكل حرية وأدب..."
-                  value={commentContent}
-                  onChange={(e) => setCommentContent(e.target.value)}
-                  className="w-full p-4 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white focus:outline-hidden resize-none"
-                />
-                <Button type="submit" variant="primary" disabled={submittingComment}>
-                  {submittingComment ? 'جاري الإرسال...' : 'نشر التعليق'}
-                </Button>
-              </form>
+              )}
             </div>
           </div>
         )}

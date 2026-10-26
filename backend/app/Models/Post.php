@@ -14,8 +14,13 @@ class Post extends Model
     protected $fillable = [
         'author_id',
         'user_id',
+        'type',
+        'title',
         'content',
         'image_path',
+        'file_path',
+        'file_name',
+        'file_size',
         'book_id',
         'likes_count',
         'comments_count',

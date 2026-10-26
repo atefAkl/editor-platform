@@ -20,19 +20,23 @@ class FeedController extends Controller
         $primaryAuthor = Author::where('is_default', true)->first()
             ?? Author::orderBy('id', 'asc')->first();
 
-        $posts = Post::with([
+        $query = Post::with([
                 'author:id,name,bio,avatar',
                 'book:id,title,slug,cover_image_path,category',
                 'comments' => function ($query) {
                     $query->latest()->limit(5);
                 }
-            ])
-            ->orderBy('is_pinned', 'desc')
+            ]);
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        $posts = $query->orderBy('is_pinned', 'desc')
             ->orderBy('published_at', 'desc')
             ->orderBy('id', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        // Get count of published books for stats
         $publishedBooksCount = Book::publiclyVisible()->count();
         $totalPostsCount = Post::count();
 
@@ -52,7 +56,7 @@ class FeedController extends Controller
     }
 
     /**
-     * Get single post dedicated details with full discussion thread.
+     * Get single post dedicated details with full discussion thread & file download.
      */
     public function show($id): JsonResponse
     {
@@ -69,20 +73,40 @@ class FeedController extends Controller
     }
 
     /**
-     * Publish a new post to the feed.
+     * Publish a new post to the feed (Authenticated & Authorized only).
      */
     public function store(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if (!$user) {
+            return $this->error('يجب تسجيل الدخول لنشر منشور جديد.', 401);
+        }
+
+        // Check if user has permission to create content
+        $canPublish = $user->can('books.create') 
+            || $user->can('news.publish') 
+            || $user->hasRole('admin') 
+            || $user->hasRole('author');
+
+        if (!$canPublish) {
+            return $this->error('ليس لديك الصلاحية الكافية لنشر منشور جديد.', 403);
+        }
+
         $validated = $request->validate([
+            'type' => ['nullable', 'string', 'in:thought,article,news,book_release'],
+            'title' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,webp,gif', 'max:5120'],
+            'file' => ['nullable', 'file', 'mimes:pdf,epub,doc,docx,zip', 'max:51200'],
             'book_id' => ['nullable', 'exists:books,id'],
             'is_pinned' => ['nullable', 'boolean'],
             'author_id' => ['nullable', 'exists:authors,id'],
         ], [
-            'content.required' => 'نص المنشور مطلوب.',
+            'content.required' => 'محتوى المنشور مطلوب.',
             'image.image' => 'يجب أن يكون الملف المرفوع صورة صالحة.',
             'image.max' => 'الحد الأقصى لحجم الصورة هو 5 ميجابايت.',
+            'file.mimes' => 'صيغ الملفات المرفقة المدعومة: PDF, EPUB, DOC, DOCX, ZIP.',
+            'file.max' => 'الحد الأقصى لحجم الملف المرفق هو 50 ميجابايت.',
         ]);
 
         $authorId = $validated['author_id'] ?? null;
@@ -94,14 +118,29 @@ class FeedController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('posts', 'public');
+            $imagePath = $request->file('image')->store('posts/images', 'public');
+        }
+
+        $filePath = null;
+        $fileName = null;
+        $fileSize = null;
+        if ($request->hasFile('file')) {
+            $uploadedFile = $request->file('file');
+            $filePath = $uploadedFile->store('posts/files', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
+            $fileSize = $uploadedFile->getSize();
         }
 
         $post = Post::create([
             'author_id' => $authorId,
-            'user_id' => $request->user()?->id,
+            'user_id' => $user->id,
+            'type' => $validated['type'] ?? 'thought',
+            'title' => $validated['title'] ?? null,
             'content' => $validated['content'],
             'image_path' => $imagePath,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_size' => $fileSize,
             'book_id' => $validated['book_id'] ?? null,
             'is_pinned' => $request->boolean('is_pinned'),
             'published_at' => now(),
@@ -113,25 +152,27 @@ class FeedController extends Controller
     }
 
     /**
-     * Add a comment to a feed post.
+     * Add a comment to a feed post (Authenticated Readers only).
      */
     public function addComment(Request $request, $id): JsonResponse
     {
+        $user = $request->user();
+        if (!$user) {
+            return $this->error('التعليق متاح فقط للأعضاء المسجلين دخول.', 401);
+        }
+
         $post = Post::findOrFail($id);
 
         $validated = $request->validate([
-            'author_name' => ['nullable', 'string', 'max:100'],
             'content' => ['required', 'string', 'max:1000'],
         ], [
             'content.required' => 'نص التعليق مطلوب.',
             'content.max' => 'يجب ألا يتجاوز التعليق 1000 حرف.',
         ]);
 
-        $userName = $request->user()?->name ?? $validated['author_name'] ?? 'قارئ متفاعل';
-
         $comment = $post->comments()->create([
-            'user_id' => $request->user()?->id,
-            'author_name' => $userName,
+            'user_id' => $user->id,
+            'author_name' => $user->name,
             'content' => $validated['content'],
         ]);
 
