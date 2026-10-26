@@ -48,4 +48,20 @@ trait HasRolesAndPermissions
         }
         return false;
     }
+
+    /**
+     * Check if the user has a specific role by name or slug.
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->roles->contains(fn ($r) => $r->slug === $role || $r->name === $role);
+    }
+
+    /**
+     * Get array of all permissions.
+     */
+    public function getAllPermissions(): array
+    {
+        return $this->getEffectivePermissions()->all();
+    }
 }

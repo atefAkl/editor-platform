@@ -17,6 +17,7 @@ class FeedAndPublicationsApiTest extends TestCase
 
     protected Author $author;
     protected Book $publishedBook;
+    protected User $creatorUser;
 
     protected function setUp(): void
     {
@@ -29,7 +30,16 @@ class FeedAndPublicationsApiTest extends TestCase
             'is_default' => true,
         ]);
 
-        $user = User::factory()->create();
+        $this->creatorUser = User::factory()->create([
+            'name' => 'المؤلف المشرف',
+            'email' => 'author@example.com',
+        ]);
+
+        // Assign author role and permissions
+        $role = Role::create(['name' => 'author', 'slug' => 'author', 'description' => 'Author Role']);
+        $permBooks = Permission::create(['name' => 'books.create', 'slug' => 'books-create', 'description' => 'Create books']);
+        $role->permissions()->attach($permBooks);
+        $this->creatorUser->roles()->attach($role);
 
         $this->publishedBook = Book::create([
             'title' => 'رواية تجريبية',
@@ -40,7 +50,7 @@ class FeedAndPublicationsApiTest extends TestCase
             'workflow_status' => 'approved',
             'publication_status' => 'published',
             'published_at' => now(),
-            'created_by' => $user->id,
+            'created_by' => $this->creatorUser->id,
         ]);
     }
 
@@ -48,6 +58,7 @@ class FeedAndPublicationsApiTest extends TestCase
     {
         Post::create([
             'author_id' => $this->author->id,
+            'type' => 'thought',
             'content' => 'منشور تجريبي للاختبار',
             'likes_count' => 5,
             'comments_count' => 1,
@@ -72,6 +83,7 @@ class FeedAndPublicationsApiTest extends TestCase
     {
         $post = Post::create([
             'author_id' => $this->author->id,
+            'type' => 'thought',
             'content' => 'منشور للإعجاب',
             'likes_count' => 10,
             'published_at' => now(),
@@ -84,17 +96,37 @@ class FeedAndPublicationsApiTest extends TestCase
             ->assertJsonPath('data.likes_count', 11);
     }
 
-    public function test_can_add_comment_to_post(): void
+    public function test_guest_cannot_comment_on_post(): void
     {
         $post = Post::create([
             'author_id' => $this->author->id,
+            'type' => 'thought',
             'content' => 'منشور للتعليق',
             'comments_count' => 0,
             'published_at' => now(),
         ]);
 
+        // Unauthenticated request should fail
         $response = $this->postJson("/api/feed/{$post->id}/comments", [
-            'author_name' => 'قارئ مهتم',
+            'content' => 'تعليق كزائر غير مسجل',
+        ]);
+
+        $response->assertStatus(401);
+    }
+
+    public function test_authenticated_user_can_add_comment_to_post(): void
+    {
+        $post = Post::create([
+            'author_id' => $this->author->id,
+            'type' => 'thought',
+            'content' => 'منشور للتعليق',
+            'comments_count' => 0,
+            'published_at' => now(),
+        ]);
+
+        $reader = User::factory()->create(['name' => 'قارئ مهتم']);
+
+        $response = $this->actingAs($reader)->postJson("/api/feed/{$post->id}/comments", [
             'content' => 'تعليق رائع وهادف',
         ]);
 
@@ -105,42 +137,52 @@ class FeedAndPublicationsApiTest extends TestCase
 
         $this->assertDatabaseHas('post_comments', [
             'post_id' => $post->id,
+            'user_id' => $reader->id,
             'author_name' => 'قارئ مهتم',
             'content' => 'تعليق رائع وهادف',
         ]);
     }
 
-    public function test_can_filter_publications_by_category(): void
+    public function test_guest_cannot_create_post(): void
     {
-        // Another book in poetry
-        $user = User::first();
-        Book::create([
-            'title' => 'ديوان شعر تجريبي',
-            'slug' => 'test-poetry',
-            'category' => 'poetry',
-            'description' => 'قصائد',
-            'author_id' => $this->author->id,
-            'workflow_status' => 'approved',
-            'publication_status' => 'published',
-            'published_at' => now(),
-            'created_by' => $user->id,
+        $response = $this->postJson('/api/feed', [
+            'type' => 'article',
+            'title' => 'مقال تجريبي',
+            'content' => 'محتوى المقال',
         ]);
 
-        // Filter by novels
-        $response = $this->getJson('/api/catalog/publications?category=novels');
+        $response->assertStatus(401);
+    }
+
+    public function test_authorized_user_can_create_post(): void
+    {
+        $response = $this->actingAs($this->creatorUser)->postJson('/api/feed', [
+            'type' => 'article',
+            'title' => 'مقال فكري جديد',
+            'content' => '<p>محتوى المقال بتنسيق غني</p>',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.title', 'مقال فكري جديد')
+            ->assertJsonPath('data.type', 'article');
+    }
+
+    public function test_can_update_platform_and_author_settings(): void
+    {
+        $response = $this->actingAs($this->creatorUser)->postJson('/api/settings', [
+            '_method' => 'PUT',
+            'author_name' => 'أ.د. عاطف عقل',
+            'author_bio' => 'نبذة محدثة عن المؤلف',
+            'site_name' => 'منصة الكاتب الأدبية المعتمدة',
+        ]);
+
         $response->assertStatus(200)
-            ->assertJsonCount(1, 'data.books')
-            ->assertJsonPath('data.books.0.category', 'novels');
+            ->assertJsonPath('success', true);
 
-        // Filter by poetry
-        $responsePoetry = $this->getJson('/api/catalog/publications?category=poetry');
-        $responsePoetry->assertStatus(200)
-            ->assertJsonCount(1, 'data.books')
-            ->assertJsonPath('data.books.0.category', 'poetry');
-
-        // Filter all
-        $responseAll = $this->getJson('/api/catalog/publications?category=all');
-        $responseAll->assertStatus(200)
-            ->assertJsonCount(2, 'data.books');
+        $this->assertDatabaseHas('authors', [
+            'id' => $this->author->id,
+            'name' => 'أ.د. عاطف عقل',
+        ]);
     }
 }

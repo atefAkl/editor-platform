@@ -5,6 +5,8 @@ const navItems = [
   { name: 'لوحة القيادة', path: '/admin', exact: true },
   { name: 'إدارة الكتب', path: '/admin/books', exact: false },
   { name: 'الأخبار والمقالات', path: '/admin/news', exact: false },
+  { name: 'الملف الشخصي', path: '/admin/profile', exact: false },
+  { name: 'الإعدادات العامة', path: '/admin/settings', exact: false },
 ];
 
 const Sidebar: React.FC = () => {

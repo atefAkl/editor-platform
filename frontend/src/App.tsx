@@ -10,6 +10,9 @@ import { FeedPage } from './pages/FeedPage';
 import { PublicationsPage } from './pages/PublicationsPage';
 import { SinglePostPage } from './pages/SinglePostPage';
 import { PublicBookDetailsPage } from './pages/PublicBookDetailsPage';
+import { PublicProfilePage } from './pages/PublicProfilePage';
+import { AdminProfilePage } from './pages/AdminProfilePage';
+import { AdminSettingsPage } from './pages/AdminSettingsPage';
 import NewsPlaceholder from './pages/NewsPlaceholder';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './hooks/useAuth';
@@ -38,6 +41,7 @@ function App() {
           <Route path="/publications" element={<PublicationsPage />} />
           <Route path="/posts/:id" element={<SinglePostPage />} />
           <Route path="/books/:slug" element={<PublicBookDetailsPage />} />
+          <Route path="/profile" element={<PublicProfilePage />} />
 
           {/* Admin Auth & Shell */}
           <Route path="/login" element={<Login />} />
@@ -50,6 +54,8 @@ function App() {
               <Route path="books/:id" element={<BookDetailPage />} />
               <Route path="books/:id/edit" element={<BookEditPage />} />
               <Route path="news" element={<NewsPlaceholder />} />
+              <Route path="profile" element={<AdminProfilePage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
           </Route>
         </Routes>

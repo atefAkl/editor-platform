@@ -7,8 +7,10 @@ use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\BookWorkflowController;
 use App\Http\Controllers\Api\PublicCatalogController;
 use App\Http\Controllers\Api\FeedController;
+use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Api\UserProfileController;
 
-// Public Front-End Catalog Routes (Publicly Visible Books only)
+// Public Front-End Catalog Routes
 Route::get('/catalog', [PublicCatalogController::class, 'publications']);
 Route::get('/catalog/publications', [PublicCatalogController::class, 'publications']);
 Route::get('/catalog/books/{slug}', [PublicCatalogController::class, 'bookDetails']);
@@ -16,23 +18,35 @@ Route::get('/catalog/books/{slug}', [PublicCatalogController::class, 'bookDetail
 // Public Social Media Feed & Discussion Routes
 Route::get('/feed', [FeedController::class, 'index']);
 Route::get('/feed/{id}', [FeedController::class, 'show']);
-Route::post('/feed/{id}/comments', [FeedController::class, 'addComment']);
 Route::post('/feed/{id}/like', [FeedController::class, 'like']);
-Route::post('/feed', [FeedController::class, 'store']);
+Route::get('/settings', [SettingsController::class, 'get']);
 
-// Public Auth routes
+// Public Auth routes (Credentials & Google Sign-In)
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/auth/google', [UserProfileController::class, 'googleLogin']);
 
 // Authenticated protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
+    // Feed comments & publishing (Restricted to logged-in users)
+    Route::post('/feed', [FeedController::class, 'store']);
+    Route::post('/feed/{id}/comments', [FeedController::class, 'addComment']);
+
+    // User Profile (Public Reader & Admin staff)
+    Route::get('/profile', [UserProfileController::class, 'get']);
+    Route::put('/profile', [UserProfileController::class, 'update']);
+    Route::put('/profile/password', [UserProfileController::class, 'updatePassword']);
+
+    // Platform & Author Settings
+    Route::put('/settings', [SettingsController::class, 'update']);
+
     // Authors
     Route::get('/authors', [AuthorController::class, 'index']);
     Route::put('/authors/{author}', [AuthorController::class, 'update']);
 
-    // Books Core (Note: No DELETE route exists - permanent deletion is explicitly prohibited)
+    // Books Core
     Route::get('/books', [BookController::class, 'index']);
     Route::post('/books', [BookController::class, 'store']);
     Route::get('/books/{book}', [BookController::class, 'show']);

@@ -16,7 +16,12 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return $this->success(Auth::user(), 'Logged in successfully');
+            $user = Auth::user();
+            $user->load('roles.permissions');
+            $data = $user->toArray();
+            $data['roles'] = $user->roles->pluck('name')->all();
+            $data['permissions'] = $user->getAllPermissions();
+            return $this->success($data, 'Logged in successfully');
         }
 
         return $this->error('The provided credentials do not match our records.', null, 401);
@@ -33,6 +38,11 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return $this->success($request->user());
+        $user = $request->user();
+        $user->load('roles.permissions');
+        $data = $user->toArray();
+        $data['roles'] = $user->roles->pluck('name')->all();
+        $data['permissions'] = $user->getAllPermissions();
+        return $this->success($data);
     }
 }
