@@ -18,6 +18,7 @@ class StoreBookRequest extends FormRequest
             'subtitle' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'introduction' => ['nullable', 'string'],
+            'category' => ['nullable', 'string', 'in:novels,short_stories,poetry,articles'],
             'author_id' => ['nullable', 'exists:authors,id'],
             'declared_publication_date' => ['nullable', 'date'],
             'cover_image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:5120'], // 5MB

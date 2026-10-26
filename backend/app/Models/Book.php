@@ -18,6 +18,7 @@ class Book extends Model
         'slug',
         'description',
         'introduction',
+        'category',
         'author_id',
         'declared_publication_date',
         'cover_image_path',

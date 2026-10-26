@@ -16,6 +16,7 @@ export const BookEditPage: React.FC = () => {
 
   const [authors, setAuthors] = useState<AuthorOption[]>([]);
   const [authorId, setAuthorId] = useState<string>('');
+  const [category, setCategory] = useState<string>('novels');
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [description, setDescription] = useState('');
@@ -54,6 +55,7 @@ export const BookEditPage: React.FC = () => {
           setIntroduction(b.introduction || '');
           setDeclaredDate(b.declared_publication_date ? b.declared_publication_date.substring(0, 10) : '');
           setAuthorId(String(b.author_id));
+          setCategory(b.category || 'novels');
           setCurrentCover(b.cover_image_path);
           setCurrentFile(b.book_file_path);
           setWorkflowStatus(b.workflow_status);
@@ -79,6 +81,7 @@ export const BookEditPage: React.FC = () => {
       formData.append('_method', 'PUT');
       formData.append('title', title);
       formData.append('author_id', authorId);
+      if (category) formData.append('category', category);
       if (subtitle) formData.append('subtitle', subtitle);
       if (description) formData.append('description', description);
       if (introduction) formData.append('introduction', introduction);
@@ -198,6 +201,23 @@ export const BookEditPage: React.FC = () => {
                   {author.name} {author.is_default ? '(المؤلف الأساسي)' : ''}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              التصنيف الأدبي <span className="text-rose-500">*</span>
+            </label>
+            <select
+              required
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="novels">روايات</option>
+              <option value="short_stories">قصص قصيرة</option>
+              <option value="poetry">دواوين</option>
+              <option value="articles">مقالات</option>
             </select>
           </div>
 

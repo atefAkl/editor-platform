@@ -13,6 +13,7 @@ export interface BookItem {
   publication_status: string;
   author?: { id: number; name: string };
   creator?: { id: number; name: string };
+  category?: string;
   cover_image_path?: string;
   created_at: string;
 }
@@ -155,7 +156,17 @@ export const BooksListPage: React.FC = () => {
                 {books.map((book) => (
                   <tr key={book.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-900">{book.title}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900">{book.title}</span>
+                        {book.category && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary-50 text-primary-700 border border-primary-200/60">
+                            {book.category === 'novels' ? 'رواية' :
+                             book.category === 'short_stories' ? 'قصص قصيرة' :
+                             book.category === 'poetry' ? 'ديوان' :
+                             book.category === 'articles' ? 'مقالات' : book.category}
+                          </span>
+                        )}
+                      </div>
                       {book.subtitle && (
                         <div className="text-xs text-gray-500 mt-0.5">{book.subtitle}</div>
                       )}

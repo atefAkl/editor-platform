@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { PublicNavbar } from '../components/organisms/PublicNavbar';
 import { Button } from '../components/atoms/Button';
 
 export const PublicBookDetailsPage: React.FC = () => {
@@ -36,9 +37,9 @@ export const PublicBookDetailsPage: React.FC = () => {
           <span className="text-4xl block">🔍</span>
           <h1 className="text-xl font-bold text-gray-900">الكتاب غير متاح</h1>
           <p className="text-sm text-gray-500">{error || 'لم نتمكن من العثور على هذا الكتاب ضمن المنشورات المعتمدة.'}</p>
-          <Link to="/">
+          <Link to="/publications">
             <Button variant="primary" size="sm">
-              العودة إلى المكتبة
+              العودة إلى المؤلفات
             </Button>
           </Link>
         </div>
@@ -47,23 +48,19 @@ export const PublicBookDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans" dir="rtl">
-      {/* Navigation Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-semibold">
-            ← العودة للمكتبة
-          </Link>
-          <Link to="/admin">
-            <Button variant="secondary" size="sm">
-              لوحة الإدارة
-            </Button>
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50 font-sans flex flex-col" dir="rtl">
+      <PublicNavbar authorName={book.author?.name} />
 
       {/* Book Presentation Section */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1">
+        <div className="mb-6 flex items-center justify-between">
+          <Link to="/publications" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-semibold">
+            ← العودة إلى قائمة المؤلفات
+          </Link>
+          <Link to="/" className="text-xs text-gray-500 hover:text-gray-900 font-medium">
+            عرض صفحة الأخبار ↗
+          </Link>
+        </div>
         <div className="bg-white rounded-3xl border border-gray-200 shadow-xs p-6 sm:p-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Cover Column */}
