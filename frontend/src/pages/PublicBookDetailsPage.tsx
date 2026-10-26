@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
-import { PublicNavbar } from '../components/organisms/PublicNavbar';
+import { PlatformLayout } from '../templates/PlatformLayout';
 import { Button } from '../components/atoms/Button';
 
 export const PublicBookDetailsPage: React.FC = () => {
@@ -48,12 +48,9 @@ export const PublicBookDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col" dir="rtl">
-      <PublicNavbar authorName={book.author?.name} />
-
-      {/* Book Presentation Section */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1">
-        <div className="mb-6 flex items-center justify-between">
+    <PlatformLayout authorName={book.author?.name}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
           <Link to="/publications" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-semibold">
             ← العودة إلى قائمة المؤلفات
           </Link>
@@ -136,7 +133,7 @@ export const PublicBookDetailsPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </PlatformLayout>
   );
 };

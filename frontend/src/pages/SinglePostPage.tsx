@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
-import { PublicNavbar } from '../components/organisms/PublicNavbar';
+import { PlatformLayout } from '../templates/PlatformLayout';
 import { Button } from '../components/atoms/Button';
 
 interface Comment {
@@ -142,9 +142,7 @@ export const SinglePostPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100/70 flex flex-col font-sans" dir="rtl">
-      <PublicNavbar authorName={post?.author?.name} />
-
+    <PlatformLayout authorName={post?.author?.name} authorAvatar={post?.author?.avatar}>
       {copyToast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-sm px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 animate-bounce">
           <span>📋</span>
@@ -152,7 +150,7 @@ export const SinglePostPage: React.FC = () => {
         </div>
       )}
 
-      <main className="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 space-y-6">
+      <div className="space-y-6">
         {/* Navigation back */}
         <div className="flex items-center justify-between">
           <Link
@@ -419,7 +417,7 @@ export const SinglePostPage: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PlatformLayout>
   );
 };

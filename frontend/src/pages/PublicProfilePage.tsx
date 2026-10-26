@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { apiClient } from '../api/client';
-import { PublicNavbar } from '../components/organisms/PublicNavbar';
+import { PlatformLayout } from '../templates/PlatformLayout';
 import { Button } from '../components/atoms/Button';
 
 const READING_GENRES = [
@@ -69,22 +69,19 @@ export const PublicProfilePage: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col font-sans" dir="rtl">
-        <PublicNavbar />
-        <div className="max-w-md mx-auto my-auto p-8 bg-white rounded-2xl shadow-sm border border-gray-200 text-center space-y-4">
+      <PlatformLayout>
+        <div className="max-w-md mx-auto my-12 p-8 bg-white rounded-3xl shadow-sm border border-gray-200 text-center space-y-4">
           <span className="text-4xl">👤</span>
           <h2 className="text-xl font-bold text-gray-900">تسجيل الدخول مطلوب</h2>
           <p className="text-sm text-gray-500">يرجى تسجيل الدخول للوصول إلى ملفك الشخصي وتخصيص قراءاتك.</p>
         </div>
-      </div>
+      </PlatformLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100/70 flex flex-col font-sans" dir="rtl">
-      <PublicNavbar />
-
-      <main className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 space-y-6">
+    <PlatformLayout>
+      <div className="space-y-6">
         {/* Profile Card Header */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-xs border border-gray-200 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-primary-600 to-indigo-600 text-white font-extrabold flex items-center justify-center text-3xl shadow-sm overflow-hidden shrink-0">
@@ -250,7 +247,7 @@ export const PublicProfilePage: React.FC = () => {
             </p>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PlatformLayout>
   );
 };

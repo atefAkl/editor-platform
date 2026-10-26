@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../api/client';
-import { PublicNavbar } from '../components/organisms/PublicNavbar';
+import { PlatformLayout } from '../templates/PlatformLayout';
 import { Button } from '../components/atoms/Button';
 import { Badge } from '../components/atoms/Badge';
 
@@ -112,26 +112,24 @@ export const PublicationsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans" dir="rtl">
-      <PublicNavbar authorName={author?.name} />
+    <PlatformLayout authorName={author?.name} authorAvatar={author?.avatar}>
+      <div className="space-y-6">
+        {/* Header Banner */}
+        <section className="bg-white rounded-3xl border border-gray-200 py-10 px-6 text-center shadow-xs">
+          <div className="max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold text-primary-700 bg-primary-50 border border-primary-200/80 px-3.5 py-1 rounded-full uppercase tracking-wider">
+              المكتبة الأدبية الرسمية
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight">
+              مؤلفات وإصدارات {author?.name || 'الكاتب'}
+            </h1>
+            <p className="text-gray-600 text-xs sm:text-sm max-w-xl mx-auto">
+              تصفح جميع الروايات، والمجموعات القصصية، والدواوين الشعرية، والمقالات المنشورة رسمياً.
+            </p>
+          </div>
+        </section>
 
-      {/* Header Banner */}
-      <section className="bg-gradient-to-b from-white to-gray-50 border-b border-gray-200 py-12 px-4 sm:px-6 text-center">
-        <div className="max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-bold text-primary-700 bg-primary-50 border border-primary-200/80 px-3.5 py-1 rounded-full uppercase tracking-wider">
-            المكتبة الأدبية الرسمية
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
-            مؤلفات وإصدارات {author?.name || 'الكاتب'}
-          </h1>
-          <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
-            تصفح جميع الروايات، والمجموعات القصصية، والدواوين الشعرية، والمقالات المنشورة رسمياً.
-          </p>
-        </div>
-      </section>
-
-      {/* Filter and Search Bar */}
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 pt-8 pb-4">
+        {/* Filter and Search Bar */}
         <div className="bg-white p-4 rounded-2xl shadow-xs border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Category Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
@@ -170,7 +168,7 @@ export const PublicationsPage: React.FC = () => {
       </div>
 
       {/* Main Catalog Grid */}
-      <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1">
+      <div className="space-y-6">
         {loading && (
           <div className="text-center py-20 space-y-3">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-600 border-t-transparent"></div>
@@ -269,27 +267,7 @@ export const PublicationsPage: React.FC = () => {
             ))}
           </div>
         )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-8 text-center text-xs text-gray-500 mt-12">
-        <div className="max-w-6xl mx-auto px-4 space-y-2">
-          <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة الكاتب والنشر الرقمي.</p>
-          <div className="flex items-center justify-center gap-4">
-            <Link to="/" className="hover:text-primary-600">
-              الرئيسية (الأخبار)
-            </Link>
-            <span>•</span>
-            <Link to="/publications" className="hover:text-primary-600">
-              المؤلفات والكتب
-            </Link>
-            <span>•</span>
-            <Link to="/admin" className="hover:text-primary-600">
-              لوحة الإدارة
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </PlatformLayout>
   );
 };

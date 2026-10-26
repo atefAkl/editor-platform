@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
-import { PublicNavbar } from '../components/organisms/PublicNavbar';
+import { PlatformLayout } from '../templates/PlatformLayout';
 import { RichTextEditor } from '../components/molecules/RichTextEditor';
 import { Button } from '../components/atoms/Button';
 
@@ -244,9 +244,7 @@ export const FeedPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100/70 flex flex-col font-sans" dir="rtl">
-      <PublicNavbar authorName={data?.author?.name} />
-
+    <PlatformLayout authorName={data?.author?.name} authorAvatar={data?.author?.avatar}>
       {/* Copy notification toast */}
       {copyToast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-sm px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 animate-bounce">
@@ -255,7 +253,7 @@ export const FeedPage: React.FC = () => {
         </div>
       )}
 
-      <main className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 space-y-6">
+      <div className="space-y-6">
         {/* Author Profile Hero Banner */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-xs border border-gray-200">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-right">
@@ -649,7 +647,7 @@ export const FeedPage: React.FC = () => {
             })}
           </div>
         )}
-      </main>
+      </div>
 
       {/* Comprehensive Parallel Creation Modal (Matches Book creation form) */}
       {showCreateModal && canCreateContent && (
@@ -789,26 +787,6 @@ export const FeedPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-8 text-center text-xs text-gray-500 mt-12">
-        <div className="max-w-6xl mx-auto px-4 space-y-2">
-          <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لمنصة الكاتب والنشر الرقمي.</p>
-          <div className="flex items-center justify-center gap-4">
-            <Link to="/" className="hover:text-primary-600">
-              الرئيسية (الأخبار)
-            </Link>
-            <span>•</span>
-            <Link to="/publications" className="hover:text-primary-600">
-              المؤلفات والكتب
-            </Link>
-            <span>•</span>
-            <Link to="/admin" className="hover:text-primary-600">
-              لوحة الإدارة
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PlatformLayout>
   );
 };
