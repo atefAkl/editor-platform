@@ -16,6 +16,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (credentials: any) => Promise<void>;
+  register: (registrationData: any) => Promise<void>;
   loginWithGoogle: (customData?: Partial<User>) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -49,6 +50,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: any) => {
     await apiClient.get('/sanctum/csrf-cookie');
     const response = await apiClient.post<User>('/api/login', credentials);
+    if (response.success && response.data) {
+      setUser(response.data);
+    }
+  };
+
+  const register = async (registrationData: any) => {
+    await apiClient.get('/sanctum/csrf-cookie');
+    const response = await apiClient.post<User>('/api/register', registrationData);
     if (response.success && response.data) {
       setUser(response.data);
     }
@@ -89,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout, refreshUser, can, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, logout, refreshUser, can, hasRole }}>
       {children}
     </AuthContext.Provider>
   );

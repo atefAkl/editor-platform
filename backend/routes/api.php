@@ -21,8 +21,9 @@ Route::get('/feed/{id}', [FeedController::class, 'show']);
 Route::post('/feed/{id}/like', [FeedController::class, 'like']);
 Route::get('/settings', [SettingsController::class, 'get']);
 
-// Public Auth routes (Credentials & Google Sign-In)
+// Public Auth routes (Credentials & Registration & Google Sign-In)
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [UserProfileController::class, 'googleLogin']);
 
 // Authenticated protected routes

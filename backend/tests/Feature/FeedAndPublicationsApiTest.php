@@ -185,4 +185,26 @@ class FeedAndPublicationsApiTest extends TestCase
             'name' => 'أ.د. عاطف عقل',
         ]);
     }
+
+    public function test_can_register_new_reader_with_real_email_and_password(): void
+    {
+        $response = $this->postJson('/api/register', [
+            'name' => 'قارئ أدبي جديد',
+            'email' => 'newreader@example.com',
+            'password' => 'SecurePass123!',
+            'password_confirmation' => 'SecurePass123!',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'قارئ أدبي جديد')
+            ->assertJsonPath('data.email', 'newreader@example.com');
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'newreader@example.com',
+            'name' => 'قارئ أدبي جديد',
+        ]);
+
+        $this->assertAuthenticated();
+    }
 }
