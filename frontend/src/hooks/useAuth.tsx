@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
 
+/**
+ * The Google sign-in is currently a DEMO simulation (no Google token verification).
+ * The backend rejects it outside the local environment, so the buttons are only shown
+ * in development builds. Switch this on once real Google OAuth is implemented.
+ */
+export const GOOGLE_LOGIN_ENABLED: boolean = import.meta.env.DEV;
+
 export interface User {
   id: number;
   name: string;

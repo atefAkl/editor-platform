@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import AdminLayout from './templates/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import { BooksListPage } from './pages/BooksListPage';
@@ -22,6 +22,11 @@ const AuthGuard = () => {
   
   if (loading) return <div className="flex items-center justify-center h-screen bg-gray-50 text-gray-500">جاري التحميل...</div>;
   if (!user) return <NavigateToLogin />;
+
+  // Self-registered readers have no staff permissions: keep them out of the admin UI.
+  // (UI guard only — the API enforces permissions independently on every request.)
+  const isStaff = (user.roles || []).includes('admin') || (user.permissions || []).length > 0;
+  if (!isStaff) return <Navigate to="/" replace />;
   
   return <Outlet />;
 };

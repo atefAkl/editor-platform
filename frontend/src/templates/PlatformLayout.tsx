@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, GOOGLE_LOGIN_ENABLED } from '../hooks/useAuth';
 import { Button } from '../components/atoms/Button';
 
 interface PlatformLayoutProps {
@@ -357,7 +357,8 @@ export const PlatformLayout: React.FC<PlatformLayoutProps> = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button
+                {GOOGLE_LOGIN_ENABLED && (
+<button
                   onClick={() => loginWithGoogle()}
                   className="hidden sm:flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-xl shadow-2xs transition-all cursor-pointer"
                 >
@@ -381,6 +382,7 @@ export const PlatformLayout: React.FC<PlatformLayoutProps> = ({
                   </svg>
                   <span>جوجل</span>
                 </button>
+)}
 
                 <Link to="/login">
                   <Button variant="primary" size="sm" className="text-xs font-bold">

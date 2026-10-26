@@ -29,7 +29,7 @@ class AuthController extends Controller
             $user = Auth::user();
             $user->load('roles.permissions');
             $data = $user->toArray();
-            $data['roles'] = $user->roles->pluck('name')->all();
+            $data['roles'] = $user->roles->pluck('slug')->all();
             $data['permissions'] = $user->getAllPermissions();
 
             return $this->success($data, 'تم تسجيل الدخول بنجاح.');
@@ -76,7 +76,7 @@ class AuthController extends Controller
 
         $user->load('roles.permissions');
         $data = $user->toArray();
-        $data['roles'] = $user->roles->pluck('name')->all();
+        $data['roles'] = $user->roles->pluck('slug')->all();
         $data['permissions'] = $user->getAllPermissions();
 
         return $this->success($data, 'تم إنشاء حساب القارئ بنجاح، أهلاً بك في المنصة!', 201);
@@ -102,7 +102,7 @@ class AuthController extends Controller
         $user = $request->user();
         $user->load('roles.permissions');
         $data = $user->toArray();
-        $data['roles'] = $user->roles->pluck('name')->all();
+        $data['roles'] = $user->roles->pluck('slug')->all();
         $data['permissions'] = $user->getAllPermissions();
 
         return $this->success($data);

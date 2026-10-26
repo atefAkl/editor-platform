@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, GOOGLE_LOGIN_ENABLED } from '../hooks/useAuth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/atoms/Button';
 
@@ -176,7 +176,8 @@ const Login: React.FC = () => {
                 {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
               </Button>
 
-              <div className="relative my-4 text-center">
+              {GOOGLE_LOGIN_ENABLED && (<>
+<div className="relative my-4 text-center">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
@@ -209,6 +210,7 @@ const Login: React.FC = () => {
                 </svg>
                 <span>الدخول السريع بحساب جوجل</span>
               </button>
+</>)}
             </form>
           ) : (
             /* Register Form for Audience */

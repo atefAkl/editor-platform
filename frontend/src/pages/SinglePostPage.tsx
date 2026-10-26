@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, GOOGLE_LOGIN_ENABLED } from '../hooks/useAuth';
 import { PlatformLayout } from '../templates/PlatformLayout';
 import { Button } from '../components/atoms/Button';
 
@@ -400,12 +400,14 @@ export const SinglePostPage: React.FC = () => {
                     التعليق متاح للأعضاء والجمهور المسجل. يمكنك تسجيل الدخول بنقرة واحدة باستخدام حساب جوجل أو بياناتك.
                   </p>
                   <div className="flex items-center justify-center gap-3">
-                    <button
+                    {GOOGLE_LOGIN_ENABLED && (
+<button
                       onClick={() => loginWithGoogle()}
                       className="inline-flex items-center gap-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-900 text-sm font-bold px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
                     >
                       <span>دخول سريع بحساب جوجل</span>
                     </button>
+)}
                     <Link to="/login">
                       <Button variant="outline" size="sm" className="text-xs">
                         تسجيل الدخول

@@ -51,7 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'data' => null,
-                    'message' => $e->getMessage() ?: 'Server Error',
+                    'message' => ($status >= 500 && ! config('app.debug')) ? 'حدث خطأ غير متوقع في الخادم.' : ($e->getMessage() ?: 'Server Error'),
                     'errors' => null,
                 ], $status);
             }

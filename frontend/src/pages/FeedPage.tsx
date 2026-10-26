@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, GOOGLE_LOGIN_ENABLED } from '../hooks/useAuth';
 import { PlatformLayout } from '../templates/PlatformLayout';
 import { RichTextEditor } from '../components/molecules/RichTextEditor';
 import { Button } from '../components/atoms/Button';
@@ -628,12 +628,14 @@ export const FeedPage: React.FC = () => {
                             التعليق مخصص للأعضاء المسجلين دخول (الجمهور).
                           </p>
                           <div className="flex items-center justify-center gap-2">
-                            <button
+                            {GOOGLE_LOGIN_ENABLED && (
+<button
                               onClick={() => loginWithGoogle()}
                               className="inline-flex items-center gap-1.5 bg-white border border-blue-300 hover:bg-blue-50 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg shadow-2xs transition-all cursor-pointer"
                             >
                               <span>تسجيل الدخول بحساب جوجل للتعليق</span>
                             </button>
+)}
                             <Link to="/login" className="text-xs text-blue-700 hover:underline">
                               تسجيل الدخول بالحساب
                             </Link>

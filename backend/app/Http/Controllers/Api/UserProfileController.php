@@ -23,7 +23,7 @@ class UserProfileController extends Controller
 
         return $this->success([
             'user' => $user,
-            'roles' => $user->roles->pluck('name'),
+            'roles' => $user->roles->pluck('slug'),
             'permissions' => $permissions,
         ], 'تم جلب ملف المستخدم بنجاح.');
     }
@@ -78,9 +78,9 @@ class UserProfileController extends Controller
         ]);
 
         if (!Hash::check($validated['current_password'], $user->password)) {
-            return $this->error('كلمة المرور الحالية غير صحيحة.', 422, [
+            return $this->error('كلمة المرور الحالية غير صحيحة.', [
                 'current_password' => ['كلمة المرور الحالية غير صحيحة.']
-            ]);
+            ], 422);
         }
 
         $user->password = Hash::make($validated['password']);
@@ -91,9 +91,18 @@ class UserProfileController extends Controller
 
     /**
      * Reader / Audience Google authentication or simulated social login.
+     *
+     * SECURITY: This is a DEMO-ONLY simulated login. It trusts the email sent by the
+     * client without verifying a Google ID token, so it would allow logging in as ANY
+     * user (including admins). It is therefore hard-disabled outside the local env.
+     * Replace with real Google OAuth (e.g. Laravel Socialite) before enabling in production.
      */
     public function googleLogin(Request $request): JsonResponse
     {
+        if (! app()->environment('local')) {
+            return $this->error('تسجيل الدخول بحساب جوجل غير مفعّل حالياً.', null, 404);
+        }
+
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'name' => ['required', 'string'],

@@ -79,7 +79,7 @@ class FeedController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return $this->error('يجب تسجيل الدخول لنشر منشور جديد.', 401);
+            return $this->error('يجب تسجيل الدخول لنشر منشور جديد.', null, 401);
         }
 
         // Check if user has permission to create content
@@ -89,7 +89,7 @@ class FeedController extends Controller
             || $user->hasRole('author');
 
         if (!$canPublish) {
-            return $this->error('ليس لديك الصلاحية الكافية لنشر منشور جديد.', 403);
+            return $this->error('ليس لديك الصلاحية الكافية لنشر منشور جديد.', null, 403);
         }
 
         $validated = $request->validate([
@@ -158,7 +158,7 @@ class FeedController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return $this->error('التعليق متاح فقط للأعضاء المسجلين دخول.', 401);
+            return $this->error('التعليق متاح فقط للأعضاء المسجلين دخول.', null, 401);
         }
 
         $post = Post::findOrFail($id);

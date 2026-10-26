@@ -35,6 +35,12 @@ class SettingsController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
+        // Only administrators or authorized primary authors may change platform identity & author settings.
+        $user = $request->user();
+        if (! $user || (! $user->hasRole('admin') && ! $user->hasRole('author') && ! $user->hasPermission('authors.manage_default'))) {
+            return $this->error('ليس لديك صلاحية تعديل الإعدادات العامة.', null, 403);
+        }
+
         $validated = $request->validate([
             'author_name' => ['required', 'string', 'max:255'],
             'author_bio' => ['nullable', 'string'],

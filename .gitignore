@@ -12,6 +12,8 @@
 /frontend/dist/
 /backend/public/storage
 /backend/public/hot
+/deploy_staging/
+editor-platform-production.zip
 
 # Storage and Logs
 /backend/storage/*.key
