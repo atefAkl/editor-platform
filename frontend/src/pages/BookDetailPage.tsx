@@ -42,7 +42,7 @@ export const BookDetailPage: React.FC = () => {
     try {
       const res = await apiClient.post(`/api/books/${id}/${endpoint}`, payload);
       if (res.success) {
-        setSuccessMsg(res.message);
+        setSuccessMsg(res.message || 'تم تنفيذ العملية بنجاح');
         if (endpoint === 'copy') {
           // Navigate to new copied draft
           navigate(`/admin/books/${res.data.id}`);

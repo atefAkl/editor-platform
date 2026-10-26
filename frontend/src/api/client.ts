@@ -9,24 +9,28 @@ export class ApiError extends Error {
   }
 }
 
-async function fetchWithCsrf(url: string, options: RequestInit = {}) {
-  // Add CSRF Token setup for Sanctum
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
+  errors?: any;
+}
+
+async function fetchWithCsrf(url: string, options: RequestInit = {}): Promise<any> {
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
   
   if (!options.method || options.method === 'GET') {
-    // For GET requests, we can just proceed
-  } else {
+    // GET requests
+  } else if (!(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
-    // Ensure we send cookies for stateful auth
   }
 
   options.headers = headers;
-  options.credentials = 'include'; // Essential for Sanctum session cookies
+  options.credentials = 'include';
 
   let response = await fetch(url, options);
 
-  // If 419 CSRF token mismatch, try fetching the cookie and retry once
   if (response.status === 419) {
     await fetch('/sanctum/csrf-cookie', {
       method: 'GET',
@@ -49,8 +53,20 @@ async function fetchWithCsrf(url: string, options: RequestInit = {}) {
 }
 
 export const apiClient = {
-  get: (url: string) => fetchWithCsrf(url, { method: 'GET' }),
-  post: (url: string, body: any) => fetchWithCsrf(url, { method: 'POST', body: JSON.stringify(body) }),
-  put: (url: string, body: any) => fetchWithCsrf(url, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: (url: string) => fetchWithCsrf(url, { method: 'DELETE' }),
+  get: <T = any>(url: string): Promise<ApiResponse<T>> => fetchWithCsrf(url, { method: 'GET' }),
+  post: <T = any>(url: string, body?: any): Promise<ApiResponse<T>> => {
+    const isFormData = body instanceof FormData;
+    return fetchWithCsrf(url, {
+      method: 'POST',
+      body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
+    });
+  },
+  put: <T = any>(url: string, body?: any): Promise<ApiResponse<T>> => {
+    const isFormData = body instanceof FormData;
+    return fetchWithCsrf(url, {
+      method: 'PUT',
+      body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
+    });
+  },
+  delete: <T = any>(url: string): Promise<ApiResponse<T>> => fetchWithCsrf(url, { method: 'DELETE' }),
 };

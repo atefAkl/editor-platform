@@ -6,10 +6,19 @@ use App\Http\Controllers\Api\AuthorController;
 use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\BookWorkflowController;
 use App\Http\Controllers\Api\PublicCatalogController;
+use App\Http\Controllers\Api\FeedController;
 
 // Public Front-End Catalog Routes (Publicly Visible Books only)
-Route::get('/catalog', [PublicCatalogController::class, 'home']);
+Route::get('/catalog', [PublicCatalogController::class, 'publications']);
+Route::get('/catalog/publications', [PublicCatalogController::class, 'publications']);
 Route::get('/catalog/books/{slug}', [PublicCatalogController::class, 'bookDetails']);
+
+// Public Social Media Feed & Discussion Routes
+Route::get('/feed', [FeedController::class, 'index']);
+Route::get('/feed/{id}', [FeedController::class, 'show']);
+Route::post('/feed/{id}/comments', [FeedController::class, 'addComment']);
+Route::post('/feed/{id}/like', [FeedController::class, 'like']);
+Route::post('/feed', [FeedController::class, 'store']);
 
 // Public Auth routes
 Route::post('/login', [AuthController::class, 'login']);

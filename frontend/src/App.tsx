@@ -6,7 +6,9 @@ import { BooksListPage } from './pages/BooksListPage';
 import { BookCreatePage } from './pages/BookCreatePage';
 import { BookDetailPage } from './pages/BookDetailPage';
 import { BookEditPage } from './pages/BookEditPage';
-import { PublicHomePage } from './pages/PublicHomePage';
+import { FeedPage } from './pages/FeedPage';
+import { PublicationsPage } from './pages/PublicationsPage';
+import { SinglePostPage } from './pages/SinglePostPage';
 import { PublicBookDetailsPage } from './pages/PublicBookDetailsPage';
 import NewsPlaceholder from './pages/NewsPlaceholder';
 import Login from './pages/Login';
@@ -32,7 +34,9 @@ function App() {
       <Router>
         <Routes>
           {/* Public Visitor Facing Pages */}
-          <Route path="/" element={<PublicHomePage />} />
+          <Route path="/" element={<FeedPage />} />
+          <Route path="/publications" element={<PublicationsPage />} />
+          <Route path="/posts/:id" element={<SinglePostPage />} />
           <Route path="/books/:slug" element={<PublicBookDetailsPage />} />
 
           {/* Admin Auth & Shell */}
